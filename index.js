@@ -3,6 +3,7 @@ const app = express()
 const bodyParser = require("body-parser")
 const cors = require("cors")
 const Users = require("./models/user")
+const Consultant = require("./models/consultation")
 const bcrypt = require("bcrypt")
 const connectDB = require("./db")
 require("dotenv").config()
@@ -98,6 +99,60 @@ app.post("/signin",async(req,res,next)=>{
                 status: 400,
             })
         }
+    } catch (error) {
+        return next(error)
+    }
+})
+
+app.post("/consultant",async(req,res,next)=>{
+    try {
+        const {body} = req
+        if(!body.name||!body.email||!body.contactNo||!body.address||!body.city){
+            return res.status(400).json({
+                success: false,
+                data: "",
+                msg: "All Fields Required.",
+                status: 400
+            })
+        }
+        const findConsultant = await Consultant.findOne({email:body.email})
+        if(findConsultant){
+            return res.status(400).json({
+                success: false,
+                data: "",
+                msg: "Email already exist.",
+                status: 400
+            })
+        }
+        const data = {
+            name: body.name,
+            email: body.email,
+            contactNo: body.contactNo,
+            city: body.city,
+            address: body.address
+        }
+        const consultant = new Consultant(data)
+        await consultant.save()
+        return res.status(200).json({
+            success: true,
+            data: consultant,
+            msg: "Your details added Succesfully.",
+            status: 200,
+        })
+    } catch (error) {
+        return next(error)
+    }
+})
+
+app.get("/consultant",async(req,res,next)=>{
+    try {
+        const consultant = await Consultant.find()
+        return res.status(200).json({
+            success: true,
+            data: consultant,
+            msg: "",
+            status: 200,
+        })
     } catch (error) {
         return next(error)
     }
