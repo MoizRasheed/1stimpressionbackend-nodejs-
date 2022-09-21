@@ -3,6 +3,7 @@ const app = express()
 const bodyParser = require("body-parser")
 const cors = require("cors")
 const Users = require("./models/user")
+const Admin = require("./models/admin")
 const Consultant = require("./models/consultation")
 const bcrypt = require("bcrypt")
 const connectDB = require("./db")
@@ -62,6 +63,54 @@ app.post("/signup",async(req,res,next)=>{
     }
 })
 
+app.post("/admin/signup",async(req,res,next)=>{
+    try {
+        const {body} = req
+        if(!body.name||!body.email||!body.password){
+            return res.status(400).json({
+                success: false,
+                data: "",
+                msg: "Name, Email and password must add.",
+                status: 400
+            })
+        }
+        const findAdmin = await Admin.findOne({email:body.email})
+        if(findAdmin){
+            return res.status(400).json({
+                success: false,
+                data: "",
+                msg: "Email already exist.",
+                status: 400
+            })
+        }
+        if(body.password.length<6){
+            return res.status(400).json({
+                success: false,
+                data: "",
+                msg: "Password length minimum 6",
+                status: 400
+            })
+        }
+        const data = {
+            name: body.name,
+            email: body.email,
+            password: body.password
+        }
+        const admin = new Admin(data)
+        const salt = await bcrypt.genSalt(10);
+        admin.password = await bcrypt.hash(admin.password, salt);
+        await admin.save()
+        return res.status(200).json({
+            success: true,
+            data: admin,
+            msg: "Succesfully add new admin.",
+            status: 200,
+        })
+    } catch (error) {
+        return next(error)
+    }
+})
+
 app.post("/signin",async(req,res,next)=>{
     try {
         const {body} = req
@@ -83,6 +132,48 @@ app.post("/signin",async(req,res,next)=>{
             })
         }
         const validPassword = await bcrypt.compare(body.password, user.password)
+        if(validPassword){
+            return res.status(200).json({
+                success: true,
+                data: "",
+                msg: "Succesfully signin.",
+                status: 200,
+            })
+        }
+        else{
+            return res.status(400).json({
+                success: false,
+                data: '',
+                msg: "Password wrong.",
+                status: 400,
+            })
+        }
+    } catch (error) {
+        return next(error)
+    }
+})
+
+app.post("/admin/signin",async(req,res,next)=>{
+    try {
+        const {body} = req
+        if(!body.email||!body.password){
+            return res.status(400).json({
+                success: false,
+                data: "",
+                msg: "Please Enter Email and password.",
+                status: 400
+            })
+        }
+        const admin = await Admin.findOne({email:body.email})
+        if(!admin){
+            return res.status(400).json({
+                success: false,
+                data: "",
+                msg: "Please enter valid email.",
+                status: 400
+            })
+        }
+        const validPassword = await bcrypt.compare(body.password, admin.password)
         if(validPassword){
             return res.status(200).json({
                 success: true,
