@@ -14,11 +14,7 @@ require("dotenv").config()
 const PORT = process.env.PORT || 4500
 connectDB()
 
-let corsOptions = {
-    origin: "http://localhost:3000"
-}
-
-app.use(cors(corsOptions))
+app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:true}))
 
@@ -244,7 +240,7 @@ app.post("/consultant",async(req,res,next)=>{
 
 app.post("/accessories",upload.array("avatar",4),async(req,res,next)=>{
     try {
-        console.log("file => ",req.files)
+        // console.log("file => ",req.files)
         let avatar=[]
         for(let i=0;i<req.files.length;i++){
             let result = await cloudinary.uploader.upload(req.files[i].path,{resource_type: req.files[i].mimetype.split('/')[0]})
