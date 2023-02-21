@@ -1,10 +1,13 @@
 
 const { model, Schema } = require("mongoose");
-const { video } = require("../cloud/cloudinary");
 
 const accessoriesSchema = new Schema({
     name: {
         type: String,
+        required: true
+    },
+    price: {
+        type: Number,
         required: true
     },
     avatar: [

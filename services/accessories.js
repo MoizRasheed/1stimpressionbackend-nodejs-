@@ -3,8 +3,8 @@ const cloudinary = require("../cloud/cloudinary")
 
 exports.Accessory = async (req, res, next) => {
     try {
-        console.log("file => ",req.files)
-        console.log("file => ",req.file)
+        // console.log("file => ",req.files)
+        // console.log("file => ",req.file)
         let avatar=[]
         for(let i=0;i<req.files.length;i++){
             let result = await cloudinary.uploader.upload(req.files[i].path,{resource_type: req.files[i].mimetype.split('/')[0]})
@@ -25,6 +25,7 @@ exports.Accessory = async (req, res, next) => {
         // console.log("avatar => ",v)
         let accessories = new Accessories({
             name:req.body.name,
+            price:req.body.price,
             avatar
         })
         await accessories.save()
@@ -42,6 +43,20 @@ exports.Accessory = async (req, res, next) => {
 exports.GetAccessory = async (req, res, next) => {
     try {
         let accessories = await Accessories.find()
+        return res.status(200).json({
+            success: true,
+            data: accessories,
+            msg: "",
+            status: 200,
+        })
+    } catch (error) {
+        return next(error)
+    }
+}
+
+exports.GetAccessoryForUser = async (req, res, next) => {
+    try {
+        let accessories = await Accessories.find({name:req.query.name})
         return res.status(200).json({
             success: true,
             data: accessories,
